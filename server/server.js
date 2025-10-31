@@ -18,16 +18,32 @@ app.use('/api', gameRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const mongoStatus = mongoose.connection.readyState;
+  const statusMap = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting'
+  };
+
   res.json({ 
     message: 'Tic-Tac-Toe API is running!', 
-    timestamp: new Date().toISOString() 
+    timestamp: new Date().toISOString(),
+    mongodb: {
+      status: statusMap[mongoStatus],
+      readyState: mongoStatus
+    },
+    environment: process.env.NODE_ENV || 'development'
   });
 });
 
 // Error handling middleware
 app.use((error, req, res, next) => {
-  console.error(error);
-  res.status(500).json({ error: 'Something went wrong!' });
+  console.error('Server error:', error);
+  res.status(500).json({ 
+    error: 'Something went wrong!',
+    message: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+  });
 });
 
 // 404 handler
@@ -35,10 +51,36 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Connect to MongoDB
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('✅ Connected to MongoDB'))
-  .catch((error) => console.error('❌ MongoDB connection error:', error));
+// MongoDB connection for serverless
+let isConnected = false;
+
+const connectToDatabase = async () => {
+  if (isConnected) {
+    return;
+  }
+
+  try {
+    await mongoose.connect(MONGODB_URI, {
+      bufferCommands: false,
+    });
+    isConnected = true;
+    console.log('✅ Connected to MongoDB');
+  } catch (error) {
+    console.error('❌ MongoDB connection error:', error);
+    throw error;
+  }
+};
+
+// Connect to MongoDB for each request in serverless environment
+app.use(async (req, res, next) => {
+  try {
+    await connectToDatabase();
+    next();
+  } catch (error) {
+    console.error('Database connection failed:', error);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
 
 // For local development
 if (process.env.NODE_ENV !== 'production') {
