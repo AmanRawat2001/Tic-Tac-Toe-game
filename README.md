@@ -13,8 +13,8 @@ A simple full-stack Tic-Tac-Toe game with game history.
 
 ## Quick Start
 ```bash
-git clone <your-repo-url>
-cd interview
+git clone https://github.com/AmanRawat2001/Tic-Tac-Toe-game.git
+cd Tic-Tac-Toe-game
 ./setup.sh
 ```
 

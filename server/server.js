@@ -35,37 +35,23 @@ app.use('*', (req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Connect to MongoDB and start server
-async function startServer() {
-  try {
-    await mongoose.connect(MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
-    
-    app.listen(PORT, () => {
-      console.log(`🚀 Server is running on port ${PORT}`);
-      console.log(`📊 API endpoints:`);
-      console.log(`   GET  /api/health - Health check`);
-      console.log(`   POST /api/game - Save game result`);
-      console.log(`   GET  /api/history - Get game history`);
-      console.log(`   GET  /api/stats - Get game statistics`);
-    });
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
-  }
+// Connect to MongoDB
+mongoose.connect(MONGODB_URI)
+  .then(() => console.log('✅ Connected to MongoDB'))
+  .catch((error) => console.error('❌ MongoDB connection error:', error));
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(`🚀 Server is running on port ${PORT}`);
+    console.log(`📊 API endpoints:`);
+    console.log(`   GET  /api/health - Health check`);
+    console.log(`   POST /api/game - Save game result`);
+    console.log(`   GET  /api/history - Get game history`);
+    console.log(`   GET  /api/stats - Get game statistics`);
+  });
 }
 
-// Handle graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('🔄 SIGTERM received, shutting down gracefully...');
-  await mongoose.connection.close();
-  process.exit(0);
-});
-
-process.on('SIGINT', async () => {
-  console.log('\n🔄 SIGINT received, shutting down gracefully...');
-  await mongoose.connection.close();
-  process.exit(0);
-});
-
-startServer();
+// Export for Vercel
+module.exports = app;
