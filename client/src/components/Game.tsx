@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import type { GameProps, SquareValue, Board, GameResult } from '../types/game';
 
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:3001' 
+  : 'https://tic-tac-toe-game-g5dy.vercel.app';
+
 const Game: React.FC<GameProps> = ({ onGameEnd }) => {
   const [board, setBoard] = useState<Board>(Array(9).fill(null));
   const [isXNext, setIsXNext] = useState<boolean>(true);
@@ -58,7 +62,7 @@ const Game: React.FC<GameProps> = ({ onGameEnd }) => {
         date: new Date()
       };
 
-      await axios.post('/api/game', gameResult);
+      await axios.post(`${API_BASE_URL}/api/game`, gameResult);
       onGameEnd();
     } catch (error) {
       console.error('Error saving game:', error);

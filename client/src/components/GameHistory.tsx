@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import type { GameResult, GameHistoryProps } from '../types/game';
 
+const API_BASE_URL = import.meta.env.DEV 
+  ? 'http://localhost:3001' 
+  : 'https://tic-tac-toe-game-g5dy.vercel.app';
+
 const GameHistory: React.FC<GameHistoryProps> = ({ refreshTrigger }) => {
   const [games, setGames] = useState<GameResult[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -14,7 +18,7 @@ const GameHistory: React.FC<GameHistoryProps> = ({ refreshTrigger }) => {
   const fetchGameHistory = async (): Promise<void> => {
     try {
       setLoading(true);
-      const response = await axios.get<GameResult[]>('/api/history');
+      const response = await axios.get<GameResult[]>(`${API_BASE_URL}/api/history`);
       setGames(response.data);
       setError(null);
     } catch (error) {
