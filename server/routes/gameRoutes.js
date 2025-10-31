@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const router = express.Router();
 const Game = require('../models/Game');
 
@@ -30,14 +31,23 @@ router.post('/game', async (req, res) => {
 
 router.get('/history', async (req, res) => {
   try {
+    console.log('Fetching game history...');
+    console.log('MongoDB connection state:', mongoose.connection.readyState);
+    
     const games = await Game.find()
       .sort({ date: -1 })
       .limit(100);
 
+    console.log('Found games:', games.length);
     res.json(games);
   } catch (error) {
     console.error('Error fetching game history:', error);
-    res.status(500).json({ error: 'Failed to fetch game history' });
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Failed to fetch game history',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
