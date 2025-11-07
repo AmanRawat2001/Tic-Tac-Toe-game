@@ -96,7 +96,7 @@ app.use(async (req, res, next) => {
 });
 
 // For local development
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV) {
   const PORT = process.env.PORT || 3001;
   
   // Initialize MongoDB connection for local development
